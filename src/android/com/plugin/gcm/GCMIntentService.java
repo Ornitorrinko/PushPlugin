@@ -64,19 +64,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (extras != null)
 		{
 			// if we are in the foreground, just surface the payload, else post it to the statusbar
-            if (PushPlugin.isInForeground()) {
+						if (PushPlugin.isInForeground()) {
 				extras.putBoolean("foreground", true);
-                PushPlugin.sendExtras(extras);
+								PushPlugin.sendExtras(extras);
 			}
 			else {
 				extras.putBoolean("foreground", false);
 
-                // Send a notification if there is a message
-                if (extras.getString("message") != null && extras.getString("message").length() != 0) {
-                    createNotification(context, extras);
-                }
-            }
-        }
+								// Send a notification if there is a message
+								if (extras.getString("message") != null && extras.getString("message").length() != 0) {
+										createNotification(context, extras);
+								}
+						}
+				}
 	}
 
 	public void createNotification(Context context, Bundle extras)
@@ -98,29 +98,31 @@ public class GCMIntentService extends GCMBaseIntentService {
 			} catch (NumberFormatException e) {}
 		}
 		
+		String title = extras.getString("title");
+		String message = extras.getString("message");
+		
+		NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle()
+			.bigText(message)
+					.setBigContentTitle(title);
+
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
 				.setDefaults(defaults)
 				.setSmallIcon(context.getApplicationInfo().icon)
 				.setWhen(System.currentTimeMillis())
-				.setContentTitle(extras.getString("title"))
-				.setTicker(extras.getString("title"))
+				.setContentTitle(title)
+				.setTicker(title)
 				.setContentIntent(contentIntent)
-				.setAutoCancel(true);
+				.setAutoCancel(true)
+				.setStyle(bigText)
+						.setContentText(message);
 
-		String message = extras.getString("message");
-		if (message != null) {
-			mBuilder.setContentText(message);
-		} else {
-			mBuilder.setContentText("<missing message content>");
-		}
 
 		String msgcnt = extras.getString("msgcnt");
 		if (msgcnt != null) {
 			mBuilder.setNumber(Integer.parseInt(msgcnt));
 		}
-		
-		int notId = 0;
+		int notId = (int) (System.currentTimeMillis() / 1000L);
 		
 		try {
 			notId = Integer.parseInt(extras.getString("notId"));
